@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WealthWise | Advanced Loan EMI & Insurance Premium Suite</title>
+  <meta name="description" content="Professional financial analytics tool for precise Loan EMI modeling, credit score interest scaling, prepayment savings calculations, and premium insurance estimations.">
+  
+  <!-- Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..1000;1,9..40,300..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- html2pdf.js Report Downloader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- App Wrapper -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="brand-section">
+        <div class="brand-logo" style="background: transparent; box-shadow: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;">
+          <img src="wealthwise_logo_icon.png" alt="WealthWise Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md); filter: drop-shadow(0 2px 8px var(--primary-glow));">
+        </div>
+        <div class="brand-text">
+          <h1>WEALTHWISE</h1>
+          <span>Financial Suite</span>
+        </div>
+      </div>
+      
+      <!-- User Account Profile Panel -->
+      <div class="user-profile-panel glass-card">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user-tie" id="profile-icon"></i>
+        </div>
+        <div class="user-info">
+          <span class="user-name" id="user-display-name">Guest User</span>
+          <span class="user-role" id="user-display-role">Limited Access</span>
+        </div>
+        <div class="user-actions">
+          <button class="btn btn-primary btn-sm" id="auth-main-btn" onclick="openAuthModal()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+          <button class="btn btn-secondary btn-sm hidden" id="logout-btn" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <span class="nav-label">Core Calculators</span>
+          <button class="nav-btn active" id="nav-loan" onclick="switchTab('loan')">
+            <i class="fa-solid fa-calculator"></i>
+            <span>Loan EMI</span>
+          </button>
+          <button class="nav-btn" id="nav-compare" onclick="switchTab('compare')">
+            <i class="fa-solid fa-code-compare"></i>
+            <span>Loan Compare</span>
+          </button>
+          <button class="nav-btn" id="nav-history" onclick="switchTab('history')">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>My History</span>
+          </button>
+        </div>
+        
+        <div class="nav-group">
+          <span class="nav-label">Insurance Suite</span>
+          <button class="nav-btn" id="nav-life" onclick="switchTab('life')">
+            <i class="fa-solid fa-shield-heart"></i>
+            <span>Term Life</span>
+          </button>
+          <button class="nav-btn" id="nav-health" onclick="switchTab('health')">
+            <i class="fa-solid fa-house-medical"></i>
+            <span>Health Care</span>
+          </button>
+          <button class="nav-btn" id="nav-auto" onclick="switchTab('auto')">
+            <i class="fa-solid fa-car-rear"></i>
+            <span>Auto Premium</span>
+          </button>
+        </div>
+
+        <div class="nav-group hidden" id="nav-group-admin">
+          <span class="nav-label">Management</span>
+          <button class="nav-btn" id="nav-admin" onclick="switchTab('admin')">
+            <i class="fa-solid fa-lock-open"></i>
+            <span>Admin Console</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Sidebar Settings Footer (Relocated to Header) -->
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      <header class="main-header">
+        <div class="header-left">
+          <h2 id="view-title">Loan EMI Calculator</h2>
+          <p id="view-description">Calculate monthly installments, analyze prepayment interest savings, and export schedules.</p>
+        </div>
+        <div class="header-right">
+          <!-- Currency Toggle Switcher -->
+          <div class="header-toggle glass-card" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02);">
+            <span class="theme-label" style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-coins text-primary" style="font-size: 13px;"></i> Currency</span>
+            <div class="toggle-switch-wrapper" style="display: flex; align-items: center; gap: 6px;">
+              <span class="toggle-lbl" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">₹</span>
+              <label class="switch-toggle">
+                <input type="checkbox" id="currency-switch" onchange="toggleCurrency()">
+                <span class="slider-round"></span>
+              </label>
+              <span class="toggle-lbl" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">$</span>
+            </div>
+          </div>
+
+          <!-- Theme Toggle Switcher -->
+          <div class="header-toggle glass-card" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02);">
+            <span class="theme-label" style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-circle-half-stroke text-success" style="font-size: 13px;"></i> Theme</span>
+            <div class="toggle-switch-wrapper" style="display: flex; align-items: center; gap: 6px;">
+              <span class="toggle-lbl" style="font-size: 11px; font-weight: 700; color: var(--text-muted);"><i class="fa-solid fa-sun text-warning" style="font-size: 11px;"></i></span>
+              <label class="switch-toggle">
+                <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
+                <span class="slider-round"></span>
+              </label>
+              <span class="toggle-lbl" style="font-size: 11px; font-weight: 700; color: var(--text-muted);"><i class="fa-solid fa-moon text-info" style="font-size: 11px;"></i></span>
+            </div>
+          </div>
+
+          <!-- Language Selector Dropdown -->
+          <div class="header-toggle glass-card" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02);">
+            <span class="theme-label" style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-language text-primary" style="font-size: 14px;"></i> Lang</span>
+            <select id="lang-select" onchange="changeLanguage(this.value)" style="background: transparent; border: none; color: var(--text-main); font-weight: 700; font-size: 11px; outline: none; cursor: pointer; padding-left: 2px;">
+              <option value="en" selected style="background: var(--bg-sidebar); color: var(--text-main);">EN</option>
+              <option value="hi" style="background: var(--bg-sidebar); color: var(--text-main);">हिंदी</option>
+              <option value="es" style="background: var(--bg-sidebar); color: var(--text-main);">ES</option>
+            </select>
+          </div>
+
+          <div class="live-date">
+            <i class="fa-regular fa-calendar-days"></i>
+            <span id="current-date">May 24, 2026</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-body">
+        
+        <!-- ==================================================== -->
+        <!-- VIEW 1: LOAN EMI CALCULATOR -->
+        <!-- ==================================================== -->
+        <section id="view-loan-calculator" class="view-section active">
+          <div class="grid-layout">
+            
+            <!-- Input Card -->
+            <div class="glass-card input-panel">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-sliders"></i> Adjust Loan Details</h3>
+              </div>
+              
+              <!-- Input Ranges -->
+              <div class="input-groups">
+
+                <!-- Credit Score -->
+                <div class="input-control">
+                  <div class="input-labels">
+                    <label for="credit-score">
+                      Your Credit Score
+                      <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Standard interest rates are based directly on your credit score. An excellent score unlocks our lowest rate."></i>
+                    </label>
+                    <span class="badge score-badge" id="val-credit-badge">750 (Excellent)</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" id="credit-score" min="300" max="850" step="10" value="750" oninput="updateCreditScore(this.value)">
+                    <div class="input-with-symbol">
+                      <span class="symbol"><i class="fa-solid fa-gauge-high"></i></span>
+                      <input type="number" id="credit-score-input" value="750" min="300" max="850" onchange="updateCreditScore(this.value)">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Principal Amount -->
+                <div class="input-control">
+                  <div class="input-labels">
+                    <label for="loan-amount">
+                      How much is your loan? (Principal)
+                      <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="The baseline sum of money borrowed from a financial lender."></i>
+                    </label>
+                    <span class="badge" id="val-loan-amount-badge">₹ 5,00,000</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" id="loan-amount" min="10000" max="10000000" step="10000" value="1000000" oninput="updateLoanValue(this.value)">
+                    <div class="input-with-symbol">
+                      <span class="symbol currency-symbol">₹</span>
+                      <input type="number" id="loan-amount-input" value="1000000" min="10000" max="10000000" onchange="updateLoanValue(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interest Rate -->
+                <div class="input-control">
+                  <div class="input-labels">
+                    <label for="interest-rate">
+                      Annual Interest Rate
+                      <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Annualized loan rate. Automatically scaled relative to your active Credit Score above."></i>
+                    </label>
+                    <span class="badge" id="val-interest-badge">8.50 %</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" id="interest-rate" min="1" max="25" step="0.05" value="8.5" oninput="updateInterestValue(this.value)">
+                    <div class="input-with-symbol symbol-right">
+                      <span class="symbol">%</span>
+                      <input type="number" id="interest-rate-input" value="8.5" min="1" max="25" step="0.05" onchange="updateInterestValue(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tenure -->
+                <div class="input-control">
+                  <div class="input-labels">
+                    <label for="tenure">
+                      How long is the loan? (Tenure)
+                      <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Total period designated to settle the debt. Shorter terms lower absolute interest outlay."></i>
+                    </label>
+                    <div class="toggle-group" id="tenure-unit-toggle">
+                      <button class="toggle-btn active" id="unit-years" onclick="changeTenureUnit('years')">Years</button>
+                      <button class="toggle-btn" id="unit-months" onclick="changeTenureUnit('months')">Months</button>
+                    </div>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" id="tenure" min="1" max="30" step="1" value="15" oninput="updateTenureValue(this.value)">
+                    <div class="input-with-symbol symbol-right">
+                      <span class="symbol" id="tenure-unit-label">Yrs</span>
+                      <input type="number" id="tenure-input" value="15" min="1" max="360" onchange="updateTenureValue(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Monthly Income (Professional Affordability Diagnostics) -->
+                <div class="input-control">
+                  <div class="input-labels">
+                    <label for="monthly-income">
+                      Your Monthly Net Income
+                      <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Your net monthly take-home salary. Used to compute your Debt-to-Income (DTI) ratio and affordability diagnostics."></i>
+                    </label>
+                    <span class="badge" id="val-income-badge">₹ 75,000</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" id="monthly-income" min="5000" max="500000" step="5000" value="75000" oninput="updateIncomeValue(this.value)">
+                    <div class="input-with-symbol">
+                      <span class="symbol currency-symbol">₹</span>
+                      <input type="number" id="monthly-income-input" value="75000" min="5000" max="500000" onchange="updateIncomeValue(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prepayment Section -->
+                <div class="prepayment-card border-card">
+                  <div class="prepay-header" onclick="togglePrepayCollapse()">
+                    <h4>
+                      <i class="fa-solid fa-sack-dollar"></i> 
+                      <span>Make Extra Payments (Pay off faster!)</span>
+                    </h4>
+                    <i class="fa-solid fa-chevron-down" id="prepay-chevron"></i>
+                  </div>
+                  
+                  <div class="prepay-body collapsed" id="prepay-fields-wrapper">
+                    <!-- Recurring Monthly Prepayment -->
+                    <div class="input-control">
+                      <div class="input-labels">
+                        <label for="prepay-monthly">Add to your Monthly Payment</label>
+                        <span class="badge accent" id="val-prepay-monthly-badge">₹ 0</span>
+                      </div>
+                      <div class="slider-container">
+                        <input type="range" id="prepay-monthly" min="0" max="20000" step="100" value="0" oninput="updatePrepayMonthly(this.value)">
+                        <div class="input-with-symbol">
+                          <span class="symbol currency-symbol">₹</span>
+                          <input type="number" id="prepay-monthly-input" value="0" min="0" max="20000" onchange="updatePrepayMonthly(this.value)">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Single Prepayment Add -->
+                    <div class="single-prepay-add">
+                      <h5><i class="fa-regular fa-calendar-plus"></i> One-Time Part-Payment</h5>
+                      <div class="inline-inputs">
+                        <div class="inline-input">
+                          <label for="single-prepay-month">Month No.</label>
+                          <div class="input-with-symbol symbol-right w-100">
+                            <span class="symbol">Mth</span>
+                            <input type="number" id="single-prepay-month" placeholder="e.g. 12" min="1" max="360">
+                          </div>
+                        </div>
+                        <div class="inline-input">
+                          <label for="single-prepay-amount">Amount</label>
+                          <div class="input-with-symbol w-100">
+                            <span class="symbol currency-symbol">₹</span>
+                            <input type="number" id="single-prepay-amount" placeholder="e.g. 5000" min="100" style="padding-left: 28px;">
+                          </div>
+                        </div>
+                        <button class="btn btn-primary add-btn" onclick="addSinglePrepayment()" type="button">
+                          <i class="fa-solid fa-plus"></i>
+                        </button>
+                      </div>
+                      
+                      <!-- Prepayment List -->
+                      <div class="prepayment-list-container" style="display:none;" id="single-prepay-list-wrapper">
+                        <h6>Scheduled Part-Payments:</h6>
+                        <ul class="prepayment-list" id="single-prepayments-ul">
+                          <!-- Filled dynamically -->
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              
+              <div class="card-footer footer-btns">
+                <button class="btn btn-primary" onclick="calculateLoanEMI()"><i class="fa-solid fa-calculator"></i> Calculate EMI</button>
+                <button class="btn btn-secondary hidden" id="save-loan-history-btn" onclick="saveCalculation('loan')"><i class="fa-solid fa-bookmark"></i> Save to Profile</button>
+              </div>
+              <p class="guest-helper-text" id="loan-guest-helper">💡 Sign In to save this calculation to your history.</p>
+            </div>
+            
+            <!-- Output Cards & Chart -->
+            <div class="output-panel">
+              
+              <!-- Result Summary Cards -->
+              <div class="summary-cards">
+                <div class="glass-card stat-card primary">
+                  <span class="stat-title">Monthly EMI</span>
+                  <span class="stat-value" id="res-emi">₹ 0.00</span>
+                  <div class="stat-decor"><i class="fa-solid fa-wallet"></i></div>
+                </div>
+                
+                <div class="glass-card stat-card success">
+                  <span class="stat-title">Total Interest</span>
+                  <span class="stat-value" id="res-interest">₹ 0.00</span>
+                  <div class="stat-decor"><i class="fa-solid fa-percent"></i></div>
+                </div>
+
+                <div class="glass-card stat-card info">
+                  <span class="stat-title">Total Amount</span>
+                  <span class="stat-value" id="res-total">₹ 0.00</span>
+                  <div class="stat-decor"><i class="fa-solid fa-coins"></i></div>
+                </div>
+              </div>
+
+              <!-- Budget Affordability & DTI Diagnostics (Professional Touch) -->
+              <div class="glass-card affordability-card" id="affordability-box" style="margin-top: 25px; margin-bottom: 5px;">
+                <div class="card-header border-bottom" style="margin-bottom: 15px; padding-bottom: 8px;">
+                  <h3><i class="fa-solid fa-shield-halved text-primary"></i> Budget Affordability Diagnostics</h3>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 12px;">
+                  <div>
+                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Debt-to-Income (DTI) Ratio</span><br>
+                    <span style="font-size: 24px; font-weight: 800; font-family: var(--font-heading); color: var(--text-main);" id="res-dti-ratio">0.0%</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Risk Classification</span><br>
+                    <span class="badge" id="res-dti-status" style="font-size: 10px; font-weight: 700; padding: 4px 10px;">Safe</span>
+                  </div>
+                </div>
+                <!-- Mini Progress Bar Gauge -->
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                  <div id="res-dti-progress" style="width: 0%; height: 100%; background: var(--success); transition: width 0.4s ease, background 0.4s ease;"></div>
+                </div>
+                <p id="res-dti-feedback" style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 0;"></p>
+              </div>
+
+              <!-- Prepayment Savings Highlights -->
+              <div class="savings-alert-box glass-card accent-card hidden" id="savings-box">
+                <div class="savings-icon"><i class="fa-solid fa-champagne-glasses"></i></div>
+                <div class="savings-text">
+                  <h4>Prepayment Benefit Locked!</h4>
+                  <p>You pay off the loan in <strong id="save-tenure">0 months</strong> instead of <strong id="save-orig-tenure">0 months</strong> (<span id="save-months-saved">0 months</span> saved).</p>
+                  <p>Absolute interest savings: <strong id="save-interest-value">₹ 0.00</strong>!</p>
+                </div>
+              </div>
+
+              <!-- Visual Chart Card -->
+              <div class="glass-card chart-card">
+                <div class="card-header">
+                  <h3><i class="fa-solid fa-chart-pie"></i> Repayment Outflow Ratio</h3>
+                </div>
+                <div class="chart-box">
+                  <canvas id="loan-pie-chart"></canvas>
+                </div>
+              </div>
+
+              <!-- Smart Bank Recommendations -->
+              <div class="glass-card recommendations-card" id="recommendations-box">
+                <div class="card-header border-bottom">
+                  <h3><i class="fa-solid fa-wand-magic-sparkles text-success"></i> Smart Bank Matches</h3>
+                </div>
+                <div class="recommendations-list" id="recommendations-list">
+                  <!-- Filled dynamically -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Amortization Schedule Table -->
+          <div class="glass-card amortization-card">
+            <div class="amort-header">
+              <h3><i class="fa-solid fa-calendar-days"></i> Amortization Schedule</h3>
+              <div class="amort-controls">
+                <div class="toggle-group" id="amort-group-toggle">
+                  <button class="toggle-btn active" id="amort-yearly" onclick="changeAmortView('yearly')">Yearly</button>
+                  <button class="toggle-btn" id="amort-monthly" onclick="changeAmortView('monthly')">Monthly</button>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="exportCSV()"><i class="fa-solid fa-download"></i> Export CSV</button>
+                <button class="btn btn-secondary btn-sm" onclick="downloadPDFReport()"><i class="fa-solid fa-file-pdf text-danger"></i> Download PDF</button>
+                <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table class="schedule-table" id="amortization-table">
+                <thead>
+                  <tr id="table-head-row">
+                    <th>Year</th>
+                    <th>Annual Paid</th>
+                    <th>Principal Paid</th>
+                    <th>Interest Paid</th>
+                    <th>Outstanding Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="amortization-tbody">
+                  <!-- Filled dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 2: LOAN COMPARISON -->
+        <!-- ==================================================== -->
+        <section id="view-loan-comparison" class="view-section">
+          <div class="compare-container">
+            <div class="compare-grid">
+              
+              <!-- Scenario A -->
+              <div class="glass-card scenario-card">
+                <div class="card-header border-bottom">
+                  <h3><span class="scen-badge text-primary">A</span> Loan Scenario A</h3>
+                </div>
+                <div class="card-body">
+                  <div class="input-control">
+                    <label for="comp-amount-a">Loan Amount</label>
+                    <div class="input-with-symbol w-100">
+                      <span class="symbol currency-symbol">₹</span>
+                      <input type="number" id="comp-amount-a" value="1000000" style="padding-left: 28px;">
+                    </div>
+                  </div>
+                  <div class="input-control">
+                    <label for="comp-rate-a">Interest Rate</label>
+                    <div class="input-with-symbol symbol-right w-100">
+                      <span class="symbol">%</span>
+                      <input type="number" id="comp-rate-a" value="8.5" step="0.1">
+                    </div>
+                  </div>
+                  <div class="input-control">
+                    <label for="comp-tenure-a">Tenure</label>
+                    <div class="input-with-symbol symbol-right w-100">
+                      <span class="symbol">Yrs</span>
+                      <input type="number" id="comp-tenure-a" value="15">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Scenario B -->
+              <div class="glass-card scenario-card">
+                <div class="card-header border-bottom">
+                  <h3><span class="scen-badge text-secondary">B</span> Loan Scenario B</h3>
+                </div>
+                <div class="card-body">
+                  <div class="input-control">
+                    <label for="comp-amount-b">Loan Amount</label>
+                    <div class="input-with-symbol w-100">
+                      <span class="symbol currency-symbol">₹</span>
+                      <input type="number" id="comp-amount-b" value="1000000" style="padding-left: 28px;">
+                    </div>
+                  </div>
+                  <div class="input-control">
+                    <label for="comp-rate-b">Interest Rate</label>
+                    <div class="input-with-symbol symbol-right w-100">
+                      <span class="symbol">%</span>
+                      <input type="number" id="comp-rate-b" value="9.0" step="0.1">
+                    </div>
+                  </div>
+                  <div class="input-control">
+                    <label for="comp-tenure-b">Tenure</label>
+                    <div class="input-with-symbol symbol-right w-100">
+                      <span class="symbol">Yrs</span>
+                      <input type="number" id="comp-tenure-b" value="15">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Compare Trigger -->
+            <div class="action-row">
+              <button class="btn btn-primary" onclick="compareLoans()"><i class="fa-solid fa-circle-nodes"></i> Compare Scenarios</button>
+            </div>
+
+            <!-- Comparison Results Matrix -->
+            <div class="glass-card comp-results-card hidden" id="comparison-results-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-table-list"></i> Comparison Matrix</h3>
+              </div>
+              <div class="matrix-grid">
+                <!-- Stat Rows -->
+                <div class="matrix-row">
+                  <span class="matrix-label">Monthly EMI</span>
+                  <span class="matrix-val A" id="comp-emi-a">₹ 0.00</span>
+                  <span class="matrix-val B" id="comp-emi-b">₹ 0.00</span>
+                </div>
+                <div class="matrix-row">
+                  <span class="matrix-label">Total Interest Paid</span>
+                  <span class="matrix-val A" id="comp-interest-a">₹ 0.00</span>
+                  <span class="matrix-val B" id="comp-interest-b">₹ 0.00</span>
+                </div>
+                <div class="matrix-row">
+                  <span class="matrix-label">Total Outflow</span>
+                  <span class="matrix-val A" id="comp-total-a">₹ 0.00</span>
+                  <span class="matrix-val B" id="comp-total-b">₹ 0.00</span>
+                </div>
+              </div>
+
+              <!-- Recommendation Banner -->
+              <div class="matrix-recommendation" id="comp-recommendation">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="comp-rec-text">Scenario A is the more cost-effective option.</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 3: USER HISTORY LIST -->
+        <!-- ==================================================== -->
+        <section id="view-user-history" class="view-section">
+          <div class="history-view-container">
+            
+            <!-- Not Logged In Helper -->
+            <div class="glass-card center-helper" id="history-unauth-wrapper">
+              <i class="fa-solid fa-lock-keyhole"></i>
+              <h3>Access Protected</h3>
+              <p>You are viewing as a Guest. Register an account or Log In to save your calculations, track history, and manage persistent reports.</p>
+              <button class="btn btn-primary" onclick="openAuthModal()"><i class="fa-solid fa-user-plus"></i> Join WealthWise</button>
+            </div>
+
+            <!-- Logged In History Feed -->
+            <div class="history-auth-wrapper hidden" id="history-auth-wrapper">
+              <div class="history-grid-wrapper">
+                
+                <!-- Loan History Cards -->
+                <div class="glass-card history-category-card">
+                  <div class="card-header border-bottom">
+                    <h3><i class="fa-solid fa-calculator text-primary"></i> Saved Loans</h3>
+                  </div>
+                  <div class="history-list-feed" id="history-loans-feed">
+                    <p class="empty-feed">No saved calculations yet.</p>
+                  </div>
+                </div>
+
+                <!-- Insurance History Cards -->
+                <div class="glass-card history-category-card">
+                  <div class="card-header border-bottom">
+                    <h3><i class="fa-solid fa-shield-heart text-success"></i> Saved Insurance</h3>
+                  </div>
+                  <div class="history-list-feed" id="history-insurance-feed">
+                    <p class="empty-feed">No saved calculations yet.</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 4: TERM LIFE INSURANCE -->
+        <!-- ==================================================== -->
+        <section id="view-life-insurance" class="view-section">
+          <div class="grid-layout">
+            
+            <div class="glass-card input-panel">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-clipboard-user"></i> Your Life Details</h3>
+              </div>
+              <div class="input-groups">
+                <div class="input-control">
+                  <label for="life-sum-assured">
+                    Coverage Amount
+                    <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="The total guaranteed amount payable to your family in the event of an untimely death."></i>
+                  </label>
+                  <select id="life-sum-assured">
+                    <option value="250000">₹ 2,50,000</option>
+                    <option value="500000" selected>₹ 5,00,000</option>
+                    <option value="1000000">₹ 10,00,000</option>
+                    <option value="2000000">₹ 20,00,000</option>
+                  </select>
+                </div>
+
+                <div class="input-control">
+                  <label for="life-age">Current Age</label>
+                  <div class="input-with-symbol symbol-right w-100">
+                    <span class="symbol">Yrs</span>
+                    <input type="number" id="life-age" min="18" max="75" value="30">
+                  </div>
+                </div>
+
+                <div class="input-control">
+                  <label for="life-gender">Gender</label>
+                  <select id="life-gender">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+
+                <div class="input-control">
+                  <label>Tobacco/Smoking History</label>
+                  <div class="segmented-control">
+                    <label class="segment-option">
+                      <input type="radio" name="life-smoker" value="no" checked>
+                      <span>Non-Smoker</span>
+                    </label>
+                    <label class="segment-option">
+                      <input type="radio" name="life-smoker" value="yes">
+                      <span>Smoker</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="input-control">
+                  <label for="life-tenure">Policy Term (Years)</label>
+                  <input type="range" id="life-tenure" min="5" max="40" step="5" value="20" oninput="document.getElementById('val-life-tenure').innerText = this.value + ' Years'">
+                  <span class="range-display-label" id="val-life-tenure">20 Years</span>
+                </div>
+              </div>
+              <div class="card-footer footer-btns">
+                <button class="btn btn-primary" onclick="calculateLifeInsurance()"><i class="fa-solid fa-shield"></i> Calculate Premium</button>
+                <button class="btn btn-secondary hidden" id="save-life-history-btn" onclick="saveCalculation('life')"><i class="fa-solid fa-bookmark"></i> Save to Profile</button>
+              </div>
+              <p class="guest-helper-text" id="life-guest-helper">💡 Sign In to save this calculation to your history.</p>
+            </div>
+
+            <div class="output-panel">
+              <div class="glass-card premium-summary-card">
+                <div class="card-header border-bottom">
+                  <h3>Estimated Premium</h3>
+                </div>
+                <div class="premium-price-box">
+                  <div class="price-wrapper">
+                    <span class="price" id="life-premium-annual">₹ 0.00</span>
+                    <span class="period">per year</span>
+                  </div>
+                  <div class="price-divider"></div>
+                  <div class="price-wrapper mini">
+                    <span class="price-mini" id="life-premium-monthly">₹ 0.00</span>
+                    <span class="period">per month</span>
+                  </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="breakdown-details">
+                  <h4>Premium Breakdown (Annual)</h4>
+                  <div class="bd-row">
+                    <span>Base Risk Charge</span>
+                    <span id="life-bd-base">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row">
+                    <span>Smoker Loading</span>
+                    <span id="life-bd-smoker">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row">
+                    <span>Gender Discount</span>
+                    <span id="life-bd-gender" class="discount">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row border-top">
+                    <span>Taxes & Levies (18% GST)</span>
+                    <span id="life-bd-taxes">₹ 0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Realistic Benefits Card -->
+              <div class="glass-card benefits-card border-card">
+                <h4><i class="fa-solid fa-award text-primary"></i> Term Protection Benefits</h4>
+                <ul class="benefits-list">
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Terminal Illness Cover</strong>: Accelerated payout if diagnosed with a critical illness.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Free Annual Checkup</strong>: Complimentary master health checkup voucher every year.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Quick Settlement Guarantee</strong>: Standard 4-hour settlement support for authorized nominees.</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 5: HEALTH INSURANCE -->
+        <!-- ==================================================== -->
+        <section id="view-health-insurance" class="view-section">
+          <div class="grid-layout">
+            
+            <div class="glass-card input-panel">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-hospital-user"></i> Medical Policy Options</h3>
+              </div>
+              <div class="input-groups">
+                <div class="input-control">
+                  <label for="health-coverage">Desired Coverage Amount</label>
+                  <select id="health-coverage">
+                    <option value="200000" selected>₹ 2,00,000</option>
+                    <option value="500000">₹ 5,00,000</option>
+                    <option value="1000000">₹ 10,00,000</option>
+                  </select>
+                </div>
+
+                <div class="input-control">
+                  <label for="health-age">Proposer's Age</label>
+                  <div class="input-with-symbol symbol-right w-100">
+                    <span class="symbol">Yrs</span>
+                    <input type="number" id="health-age" value="30" min="18" max="75">
+                  </div>
+                </div>
+
+                <div class="input-control checkbox-control">
+                  <label class="checkbox-container">
+                    <input type="checkbox" id="health-spouse" onchange="toggleSpouseAgeInput(this.checked)">
+                    <span class="checkmark"></span>
+                    <span>Include Spouse</span>
+                  </label>
+                </div>
+
+                <div class="input-control hidden" id="health-spouse-age-wrapper">
+                  <label for="health-spouse-age">Spouse Age</label>
+                  <div class="input-with-symbol symbol-right w-100">
+                    <span class="symbol">Yrs</span>
+                    <input type="number" id="health-spouse-age" value="30" min="18" max="75">
+                  </div>
+                </div>
+
+                <div class="input-control">
+                  <label for="health-kids">Number of Children</label>
+                  <select id="health-kids">
+                    <option value="0" selected>0 Children</option>
+                    <option value="1">1 Child</option>
+                    <option value="2">2 Children</option>
+                    <option value="3">3+ Children</option>
+                  </select>
+                </div>
+
+                <!-- Pre-existing Conditions -->
+                <div class="multi-select-box">
+                  <label>Pre-Existing Conditions (Medical Loading)</label>
+                  <div class="checkbox-grid">
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-condition" value="diabetes">
+                      <span class="checkmark"></span>
+                      <span>Diabetes (+20%)</span>
+                    </label>
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-condition" value="hypertension">
+                      <span class="checkmark"></span>
+                      <span>Hypertension (+20%)</span>
+                    </label>
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-condition" value="thyroid">
+                      <span class="checkmark"></span>
+                      <span>Thyroid (+20%)</span>
+                    </label>
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-condition" value="heart">
+                      <span class="checkmark"></span>
+                      <span>Heart Condition (+20%)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Riders -->
+                <div class="multi-select-box">
+                  <label>Add-on Riders (Enhance Coverage)</label>
+                  <div class="checkbox-grid">
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-rider" value="critical">
+                      <span class="checkmark"></span>
+                      <span>Critical Illness Cover (+15%)</span>
+                    </label>
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-rider" value="maternity">
+                      <span class="checkmark"></span>
+                      <span>Maternity Benefit (+25%)</span>
+                    </label>
+                    <label class="checkbox-container mini">
+                      <input type="checkbox" class="health-rider" value="opd">
+                      <span class="checkmark"></span>
+                      <span>OPD Doctor Visits (+10%)</span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+              <div class="card-footer footer-btns">
+                <button class="btn btn-primary" onclick="calculateHealthInsurance()"><i class="fa-solid fa-file-invoice-dollar"></i> Calculate Health Premium</button>
+                <button class="btn btn-secondary hidden" id="save-health-history-btn" onclick="saveCalculation('health')"><i class="fa-solid fa-bookmark"></i> Save to Profile</button>
+              </div>
+              <p class="guest-helper-text" id="health-guest-helper">💡 Sign In to save this calculation to your history.</p>
+            </div>
+
+            <div class="output-panel">
+              <div class="glass-card premium-summary-card">
+                <div class="card-header border-bottom">
+                  <h3>Health Premium Summary</h3>
+                </div>
+                <div class="premium-price-box">
+                  <div class="price-wrapper">
+                    <span class="price" id="health-premium-annual">₹ 0.00</span>
+                    <span class="period">per year</span>
+                  </div>
+                  <div class="price-divider"></div>
+                  <div class="price-wrapper mini">
+                    <span class="price-mini" id="health-premium-monthly">₹ 0.00</span>
+                    <span class="period">per month</span>
+                  </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="breakdown-details">
+                  <h4>Detailed Premium Breakdown</h4>
+                  <div class="bd-row">
+                    <span>Base Family Premium</span>
+                    <span id="health-bd-members">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row">
+                    <span>Medical Loading Charge</span>
+                    <span id="health-bd-loading">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row">
+                    <span>Rider Additions Premium</span>
+                    <span id="health-bd-riders">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row border-top">
+                    <span>Taxes & GST (18%)</span>
+                    <span id="health-bd-taxes">₹ 0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Realistic Benefits Card -->
+              <div class="glass-card benefits-card border-card">
+                <h4><i class="fa-solid fa-award text-success"></i> Health Care Protections</h4>
+                <ul class="benefits-list">
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>10,000+ Cashless Hospitals</strong>: Admitted seamlessly across a global network.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>OPD Wellness Programs</strong>: Extra fitness discounts & nutritionist advice included.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Lifetime Renewability</strong>: Assured standard rate protections on standard policy renewals.</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 6: AUTO INSURANCE -->
+        <!-- ==================================================== -->
+        <section id="view-auto-insurance" class="view-section">
+          <div class="grid-layout">
+            
+            <div class="glass-card input-panel">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-car-burst"></i> Vehicle Specifications</h3>
+              </div>
+              <div class="input-groups">
+                
+                <div class="input-control">
+                  <label for="auto-idv">
+                    Insured Declared Value (Vehicle IDV)
+                    <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Maximum sum payable by the insurer in case of total loss/theft. Reflects vehicle book value."></i>
+                  </label>
+                  <input type="range" id="auto-idv" min="100000" max="5000000" step="50000" value="800000" oninput="updateAutoIdvLabel(this.value)">
+                  <span class="range-display-label" id="val-auto-idv">₹ 8,00,000</span>
+                </div>
+
+                <div class="input-control">
+                  <label for="auto-vehicle-age">Vehicle Age (Years)</label>
+                  <input type="range" id="auto-vehicle-age" min="0" max="15" step="0.5" value="1" oninput="document.getElementById('val-auto-age').innerText = this.value + ' Years'">
+                  <span class="range-display-label" id="val-auto-age">1 Year</span>
+                </div>
+
+                <div class="input-control">
+                  <label for="auto-engine-cc">Engine Displacement (CC)</label>
+                  <select id="auto-engine-cc">
+                    <option value="900">Under 1,000 cc</option>
+                    <option value="1200" selected>1,000 cc - 1,500 cc</option>
+                    <option value="2000">Over 1,500 cc</option>
+                  </select>
+                </div>
+
+                <div class="input-control">
+                  <label for="auto-ncb">
+                    No Claim Bonus (NCB Discount %)
+                    <i class="fa-solid fa-circle-question has-tooltip" data-tooltip="Accumulated percentage discount granted for claim-free policy cycles."></i>
+                  </label>
+                  <select id="auto-ncb">
+                    <option value="0" selected>0% (New Policy / Claim Made)</option>
+                    <option value="20">20% (1 Year Claim Free)</option>
+                    <option value="25">25% (2 Years Claim Free)</option>
+                    <option value="35">35% (3 Years Claim Free)</option>
+                    <option value="45">45% (4 Years Claim Free)</option>
+                    <option value="50">50% (5+ Years Claim Free)</option>
+                  </select>
+                </div>
+
+                <div class="input-control">
+                  <label for="auto-policy-type">Policy Classification</label>
+                  <select id="auto-policy-type">
+                    <option value="comprehensive" selected>Comprehensive Cover (Own Damage + Third Party)</option>
+                    <option value="thirdparty">Third-Party Cover Only (Liability Protections)</option>
+                  </select>
+                </div>
+
+              </div>
+              <div class="card-footer footer-btns">
+                <button class="btn btn-primary" onclick="calculateAutoInsurance()"><i class="fa-solid fa-car-on"></i> Calculate Auto Premium</button>
+                <button class="btn btn-secondary hidden" id="save-auto-history-btn" onclick="saveCalculation('auto')"><i class="fa-solid fa-bookmark"></i> Save to Profile</button>
+              </div>
+              <p class="guest-helper-text" id="auto-guest-helper">💡 Sign In to save this calculation to your history.</p>
+            </div>
+
+            <div class="output-panel">
+              <div class="glass-card premium-summary-card">
+                <div class="card-header border-bottom">
+                  <h3>Auto Premium Details</h3>
+                </div>
+                <div class="premium-price-box">
+                  <div class="price-wrapper">
+                    <span class="price" id="auto-premium-annual">₹ 0.00</span>
+                    <span class="period">per year</span>
+                  </div>
+                  <div class="price-divider"></div>
+                  <div class="price-wrapper mini">
+                    <span class="price-mini" id="auto-premium-monthly">₹ 0.00</span>
+                    <span class="period">per month</span>
+                  </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="breakdown-details">
+                  <h4>Premium Cost Breakdown</h4>
+                  <div class="bd-row">
+                    <span>Own Damage Cover (OD)</span>
+                    <span id="auto-bd-od">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row">
+                    <span>Third-Party Liability (TP)</span>
+                    <span id="auto-bd-tp">₹ 0.00</span>
+                  </div>
+                  <div class="bd-row border-top">
+                    <span>Taxes & Insurance Cess (18%)</span>
+                    <span id="auto-bd-taxes">₹ 0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Realistic Benefits Card -->
+              <div class="glass-card benefits-card border-card">
+                <h4><i class="fa-solid fa-award text-info"></i> Auto Protections Included</h4>
+                <ul class="benefits-list">
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>24/7 Roadside Assistance</strong>: Towing, battery, and flat-tire service flat-rate included.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Cashless Repairs</strong>: Authorized network garages settle repair bills directly.</li>
+                  <li><i class="fa-regular fa-circle-check"></i> <strong>Zero Depreciation Add-on</strong>: Replaces parts with zero cost cuts during accidents.</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================================================== -->
+        <!-- VIEW 7: ADMIN CONSOLE -->
+        <!-- ==================================================== -->
+        <section id="view-admin-dashboard" class="view-section">
+          <!-- Admin stats grid -->
+          <div class="summary-cards" style="margin-bottom: 30px;">
+            <div class="glass-card stat-card primary">
+              <span class="stat-title">Total Registered Users</span>
+              <span class="stat-value" id="admin-stat-users">0</span>
+              <div class="stat-decor"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="glass-card stat-card success">
+              <span class="stat-title">Saved Loan Inquiries</span>
+              <span class="stat-value" id="admin-stat-loans">0</span>
+              <div class="stat-decor"><i class="fa-solid fa-calculator"></i></div>
+            </div>
+            <div class="glass-card stat-card info">
+              <span class="stat-title">Saved Insurance Policies</span>
+              <span class="stat-value" id="admin-stat-insurance">0</span>
+              <div class="stat-decor"><i class="fa-solid fa-shield-heart"></i></div>
+            </div>
+          </div>
+
+          <div class="history-grid-wrapper">
+            <!-- User Profiles Table -->
+            <div class="glass-card history-category-card" style="grid-column: span 2; min-height: auto;">
+              <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-users-gear text-primary"></i> Registered Users</h3>
+              </div>
+              <div class="table-container" style="margin-top: 15px;">
+                <table class="schedule-table">
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Name</th>
+                      <th>Email Address</th>
+                      <th>Privilege Role</th>
+                      <th style="text-align: center;">Administrative Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-users-tbody">
+                    <!-- Filled dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Global Calculations Feed -->
+            <div class="glass-card history-category-card">
+              <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-history text-success"></i> Global Loan Inquiries</h3>
+              </div>
+              <div class="history-list-feed" id="admin-loans-feed" style="margin-top: 15px;">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+
+            <div class="glass-card history-category-card">
+              <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-shield-heart text-info"></i> Global Saved Insurance</h3>
+              </div>
+              <div class="history-list-feed" id="admin-insurance-feed" style="margin-top: 15px;">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: AUTHENTICATION (SIGN IN & REGISTER) -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay hidden" id="auth-modal">
+    <div class="glass-card modal-card animate-scale">
+      <div class="modal-close-wrapper">
+        <button class="modal-close-btn" onclick="closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Tab Switcher inside Modal -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" id="modal-tab-signin" onclick="switchModalAuthTab('signin')">Sign In</button>
+        <button class="modal-tab-btn" id="modal-tab-signup" onclick="switchModalAuthTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Error Message Banner -->
+      <div class="modal-error-banner hidden" id="auth-error-banner">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="auth-error-text">Authentication failed.</span>
+      </div>
+
+      <!-- Sign In Form -->
+      <form class="auth-form" id="signin-form" onsubmit="submitSignIn(event)">
+        <div class="input-control">
+          <label for="signin-email">Email Address</label>
+          <input type="email" id="signin-email" placeholder="name@domain.com" required>
+        </div>
+        <div class="input-control">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Sign In to Suite</button>
+      </form>
+
+      <!-- Sign Up/Register Form -->
+      <form class="auth-form hidden" id="signup-form" onsubmit="submitSignUp(event)">
+        <div class="input-control">
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" placeholder="John Doe" required>
+        </div>
+        <div class="input-control">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" placeholder="john@company.com" required>
+        </div>
+        <div class="input-control">
+          <label for="signup-password">Secure Password</label>
+          <input type="password" id="signup-password" placeholder="Min. 6 characters" minlength="6" required>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Create Registered Profile</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Floating Chatbot Widget ("Wealthy") -->
+  <div class="chatbot-widget" id="wealthy-chatbot">
+    <button class="chatbot-trigger animate-bounce" onclick="toggleChat()" id="chatbot-trigger-btn">
+      <i class="fa-solid fa-comments"></i>
+      <span class="chatbot-badge">1</span>
+    </button>
+    
+    <div class="chatbot-panel glass-card hidden animate-scale" id="chatbot-panel-wrapper">
+      <div class="chatbot-header">
+        <div class="chatbot-brand">
+          <div class="chatbot-avatar"><i class="fa-solid fa-gem"></i></div>
+          <div>
+            <h4>Wealthy Advisor</h4>
+            <span>Your Personal Financial Assistant</span>
+          </div>
+        </div>
+        <button class="chatbot-close-btn" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chat-message bot">
+          <p>Hi there! I am <strong>Wealthy</strong>, your personal financial assistant. How can I help you save money today?</p>
+        </div>
+        <div class="chatbot-suggestions">
+          <button class="chat-sugg-btn" onclick="askChatbotSuggestion('Show best bank rates')">Show best bank rates?</button>
+          <button class="chat-sugg-btn" onclick="askChatbotSuggestion('How do prepayments work?')">Explain Prepayments</button>
+          <button class="chat-sugg-btn" onclick="askChatbotSuggestion('Tell me a financial tip')">Financial Tip 💡</button>
+        </div>
+      </div>
+
+      <form class="chatbot-input-form" onsubmit="submitChatMessage(event)">
+        <input type="text" id="chatbot-input-field" placeholder="Ask Wealthy something..." required>
+        <button class="chat-send-btn" type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="global-loader">
+    <div class="spinner"></div>
+    <p id="loader-text">Retrieving Live Calculations...</p>
+  </div>
+
+  <!-- Chart.js Core CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Application JS Controller -->
+  <script src="app.js"></script>
+</body>
+</html>

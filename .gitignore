@@ -1,0 +1,32 @@
+# Java Compiled class files
+*.class
+
+# Maven Build Target
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.next
+pom.xml.backup
+release.properties
+dependency-reduced-pom.xml
+
+# IDE / Editors / Local settings
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Local Database & Dynamic JSON Files
+database.json
+.env
+*.log
+
+# System & OS Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
