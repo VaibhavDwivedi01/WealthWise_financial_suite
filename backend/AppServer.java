@@ -34,6 +34,7 @@ public class AppServer {
         // Bind API handlers
         server.createContext("/api/calculate-emi", new EmiHandler());
         server.createContext("/api/calculate-insurance", new InsuranceHandler());
+        server.createContext("/api/predict-insurance", new PredictInsuranceHandler());
         server.createContext("/api/auth/register", new RegisterHandler());
         server.createContext("/api/auth/login", new LoginHandler());
         server.createContext("/api/history/save", new SaveHistoryHandler());
@@ -139,6 +140,34 @@ public class AppServer {
             } catch (Exception e) {
                 e.printStackTrace();
                 sendJsonResponse(exchange, 500, new AppServer.ErrorResponse("Server error during insurance calculation."));
+            }
+        }
+    }
+
+    private static class PredictInsuranceHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (handleOptions(exchange)) return;
+
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendJsonResponse(exchange, 405, new AppServer.ErrorResponse("Method Not Allowed"));
+                return;
+            }
+
+            try {
+                String body = readRequestBody(exchange);
+                DecisionTreePredictor.PredictRequest req = gson.fromJson(body, DecisionTreePredictor.PredictRequest.class);
+
+                if (req == null) {
+                    sendJsonResponse(exchange, 400, new AppServer.ErrorResponse("Invalid request details."));
+                    return;
+                }
+
+                DecisionTreePredictor.PredictResponse result = DecisionTreePredictor.predict(req);
+                sendJsonResponse(exchange, 200, result);
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendJsonResponse(exchange, 500, new AppServer.ErrorResponse("Server error during insurance prediction."));
             }
         }
     }

@@ -47,6 +47,10 @@ const viewMetadata = {
     title: 'Auto Insurance Premium Calculator',
     description: 'Estimate motor insurance premium including Own Damage cover, NCB discounts, and Third-Party liabilities.'
   },
+  recommender: {
+    title: 'AI Policy Recommender',
+    description: 'Discover your optimal insurance portfolio using a custom-built recursive Decision Tree Classifier.'
+  },
   admin: {
     title: 'Administrative Console',
     description: 'Manage registered user accounts, analyze aggregate financial calculations, and oversee plan rates.'
@@ -181,11 +185,13 @@ function toggleCurrency() {
   const prepayInput = document.getElementById('prepay-monthly');
   const incomeInput = document.getElementById('monthly-income');
   const autoIdvInput = document.getElementById('auto-idv');
+  const recIncomeInput = document.getElementById('rec-income');
 
   let loanVal = parseFloat(loanInput.value);
   let prepayVal = parseFloat(prepayInput.value);
   let incomeVal = parseFloat(incomeInput.value);
   let autoIdvVal = autoIdvInput ? parseFloat(autoIdvInput.value) : 0;
+  let recIncomeVal = recIncomeInput ? parseFloat(recIncomeInput.value) : 0;
 
   const rate = 80.0; // 1 USD = 80 INR standard conversion rate
 
@@ -195,6 +201,7 @@ function toggleCurrency() {
     prepayVal = Math.round(prepayVal / rate);
     incomeVal = Math.round(incomeVal / rate);
     if (autoIdvVal) autoIdvVal = Math.round(autoIdvVal / rate);
+    if (recIncomeVal) recIncomeVal = Math.round(recIncomeVal / rate);
     
     // Scale slider limits for USD
     loanInput.min = 1000;
@@ -214,12 +221,19 @@ function toggleCurrency() {
       autoIdvInput.max = 150000;
       autoIdvInput.step = 1000;
     }
+
+    if (recIncomeInput) {
+      recIncomeInput.min = 1000;
+      recIncomeInput.max = 50000;
+      recIncomeInput.step = 1000;
+    }
   } else if (oldCurrency === 'usd' && state.currencyType === 'inr') {
     // Convert USD to INR
     loanVal = Math.round(loanVal * rate);
     prepayVal = Math.round(prepayVal * rate);
     incomeVal = Math.round(incomeVal * rate);
     if (autoIdvVal) autoIdvVal = Math.round(autoIdvVal * rate);
+    if (recIncomeVal) recIncomeVal = Math.round(recIncomeVal * rate);
     
     // Scale slider limits for INR
     loanInput.min = 10000;
@@ -239,6 +253,12 @@ function toggleCurrency() {
       autoIdvInput.max = 5000000;
       autoIdvInput.step = 10000;
     }
+
+    if (recIncomeInput) {
+      recIncomeInput.min = 100000;
+      recIncomeInput.max = 3000000;
+      recIncomeInput.step = 50000;
+    }
   }
 
   // Convert scheduled single prepayments
@@ -256,6 +276,10 @@ function toggleCurrency() {
   if (autoIdvInput) {
     updateAutoIdvLabel(autoIdvVal);
     autoIdvInput.value = autoIdvVal;
+  }
+  if (recIncomeInput) {
+    updateRecIncomeLabel(recIncomeVal);
+    recIncomeInput.value = recIncomeVal;
   }
 
   // Sync scheduled single prepayments list
@@ -293,6 +317,7 @@ function switchTab(tabName) {
     case 'life': activeViewId = 'view-life-insurance'; break;
     case 'health': activeViewId = 'view-health-insurance'; break;
     case 'auto': activeViewId = 'view-auto-insurance'; break;
+    case 'recommender': activeViewId = 'view-ai-recommender'; break;
     case 'admin': activeViewId = 'view-admin-dashboard'; break;
   }
   
@@ -1973,5 +1998,328 @@ function importBankRate(rate) {
   
   // Show clean success toast alert
   alert(`HDFC/Chase Smart Bank rate of ${rate.toFixed(2)}% imported successfully!`);
+}
+
+// ==========================================================================
+// AI INSURANCE POLICY RECOMMENDER (DECISION TREE CLASSIFIER)
+// ==========================================================================
+
+let latestRecommendationData = null; // Store locally for parameter pre-filling
+
+function updateRecIncomeLabel(val) {
+  const num = parseInt(val) || 0;
+  const badge = document.getElementById('val-rec-income-badge');
+  const input = document.getElementById('rec-income-input');
+  if (badge) badge.innerText = formatCurrency(num, true, 0);
+  if (input) input.value = num;
+  if (document.getElementById('rec-income')) document.getElementById('rec-income').value = num;
+}
+
+async function predictBestPolicy() {
+  const age = parseInt(document.getElementById('rec-age').value) || 30;
+  let income = parseFloat(document.getElementById('rec-income').value) || 800000;
+  const hasDependents = document.querySelector('input[name="rec-dependents"]:checked').value === 'yes';
+  const ownsVehicle = document.querySelector('input[name="rec-vehicle"]:checked').value === 'yes';
+  const hasHealthRisk = document.querySelector('input[name="rec-health"]:checked').value === 'yes';
+
+  // Convert USD income back to INR for the backend Decision Tree rules (₹80/$1)
+  if (state.currencyType === 'usd') {
+    income = income * 80.0;
+  }
+
+  const payload = {
+    age: age,
+    income: income,
+    hasDependents: hasDependents,
+    ownsVehicle: ownsVehicle,
+    hasHealthRisk: hasHealthRisk
+  };
+
+  showLoader(true, "Traversing Decision Tree Classifier...");
+  const res = await fetchPost('/api/predict-insurance', payload);
+  showLoader(false);
+
+  if (res) {
+    latestRecommendationData = res;
+    latestRecommendationData.originalRequest = payload; // save inputs
+
+    // Show output box, hide empty state
+    document.getElementById('rec-output-box').classList.remove('hidden');
+    document.getElementById('rec-empty-state').classList.add('hidden');
+
+    // Fill Product and Rationale
+    document.getElementById('res-rec-product').innerText = res.recommendedProduct;
+    document.getElementById('res-rec-rationale').innerText = res.rationale;
+
+    // Format recommended coverage
+    let displayCoverage = res.recommendedCoverage;
+    if (state.currencyType === 'usd') {
+      displayCoverage = Math.round(displayCoverage / 80.0);
+    }
+    document.getElementById('res-rec-coverage').innerText = formatCurrency(displayCoverage, true, 0);
+
+    // Render Traversal Path Timeline
+    const timeline = document.getElementById('rec-path-timeline');
+    timeline.innerHTML = '';
+    
+    res.decisionPath.forEach((step, idx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'timeline-step';
+      stepDiv.style = `
+        display: flex; 
+        align-items: flex-start; 
+        gap: 10px; 
+        padding-left: 15px; 
+        position: relative; 
+        border-left: 2px solid ${idx === res.decisionPath.length - 1 ? 'var(--success)' : 'var(--border-color)'}; 
+        padding-bottom: 12px;
+      `;
+      
+      const isLeaf = step.startsWith('Leaf Reached:');
+      const dotColor = isLeaf ? 'var(--success)' : 'var(--primary)';
+      const icon = isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch';
+
+      stepDiv.innerHTML = `
+        <span class="timeline-dot" style="
+          position: absolute; 
+          left: -6px; 
+          top: 3px; 
+          width: 10px; 
+          height: 10px; 
+          background: ${dotColor}; 
+          border-radius: 50%; 
+          box-shadow: 0 0 8px ${dotColor};
+        "></span>
+        <div style="font-size: 12px; color: var(--text-main); line-height: 1.4;">
+          <strong style="color: ${dotColor}; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 2px;"><i class="${icon}"></i> Step ${idx + 1}</strong>
+          ${step}
+        </div>
+      `;
+      timeline.appendChild(stepDiv);
+    });
+
+    // Render Full Graphical Tree Map
+    renderDecisionTreeVisual(res.treeStructure, res.activeNodeIds);
+  }
+}
+
+function renderDecisionTreeVisual(tree, activeNodeIds) {
+  const canvas = document.getElementById('tree-map-canvas');
+  if (!canvas) return;
+
+  function buildNodeHtml(node) {
+    const isActive = activeNodeIds.includes(node.id);
+    const activeClass = isActive ? 'node-active' : '';
+    const nodeClass = node.isLeaf ? 'node-leaf' : 'node-split';
+    
+    let childrenHtml = '';
+    if (!node.isLeaf) {
+      const leftActive = isActive && activeNodeIds.includes(node.left.id);
+      const rightActive = isActive && activeNodeIds.includes(node.right.id);
+
+      childrenHtml = `
+        <div class="node-children" style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; position: relative;">
+          <div class="child-branch branch-yes" style="display: flex; flex-direction: column; align-items: center; position: relative; flex: 1;">
+            <span class="branch-label ${leftActive ? 'branch-active' : ''}" style="
+              font-size: 9px; 
+              font-weight: 800; 
+              color: ${leftActive ? 'var(--success)' : 'var(--text-muted)'}; 
+              padding: 2px 6px; 
+              background: ${leftActive ? 'rgba(46, 213, 115, 0.1)' : 'rgba(255,255,255,0.02)'}; 
+              border: 1px solid ${leftActive ? 'var(--success)' : 'var(--border-color)'};
+              border-radius: var(--radius-xs); 
+              margin-bottom: 8px;
+              text-shadow: ${leftActive ? '0 0 8px rgba(46, 213, 115, 0.4)' : 'none'};
+            ">YES</span>
+            ${buildNodeHtml(node.left)}
+          </div>
+          <div class="child-branch branch-no" style="display: flex; flex-direction: column; align-items: center; position: relative; flex: 1;">
+            <span class="branch-label ${rightActive ? 'branch-active' : ''}" style="
+              font-size: 9px; 
+              font-weight: 800; 
+              color: ${rightActive ? 'var(--danger)' : 'var(--text-muted)'}; 
+              padding: 2px 6px; 
+              background: ${rightActive ? 'rgba(255, 71, 87, 0.1)' : 'rgba(255,255,255,0.02)'}; 
+              border: 1px solid ${rightActive ? 'var(--danger)' : 'var(--border-color)'};
+              border-radius: var(--radius-xs); 
+              margin-bottom: 8px;
+              text-shadow: ${rightActive ? '0 0 8px rgba(255, 71, 87, 0.4)' : 'none'};
+            ">NO</span>
+            ${buildNodeHtml(node.right)}
+          </div>
+        </div>
+      `;
+    }
+    
+    let nodeDetails = '';
+    if (node.isLeaf) {
+      let displayCoverage = node.resultCoverage;
+      if (state.currencyType === 'usd') {
+        displayCoverage = Math.round(displayCoverage / 80.0);
+      }
+      nodeDetails = `
+        <div class="leaf-details" style="margin-top: 6px; font-size: 11px; line-height: 1.3;">
+          <div style="font-weight: 800; color: var(--success); margin-bottom: 4px;">${node.resultProduct}</div>
+          <div style="color: var(--text-muted); font-size: 10px;">Cover: ${formatCurrency(displayCoverage, true, 0)}</div>
+        </div>
+      `;
+    } else {
+      nodeDetails = `
+        <div class="split-condition" style="margin-top: 5px; font-size: 10px; color: var(--text-muted); line-height: 1.4;">
+          ${node.conditionText}
+        </div>
+      `;
+    }
+
+    const glowStyle = isActive ? `box-shadow: 0 0 15px var(--success-glow); border-color: var(--success);` : '';
+
+    return `
+      <div class="tree-node-block ${activeClass}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div class="tree-node-card ${nodeClass}" style="
+          background: ${isActive ? 'rgba(46, 213, 115, 0.08)' : 'rgba(255,255,255,0.01)'}; 
+          border: 1px solid ${isActive ? 'var(--success)' : 'var(--border-color)'}; 
+          border-radius: var(--radius-sm); 
+          padding: 10px 14px; 
+          text-align: center; 
+          min-width: 160px; 
+          max-width: 220px; 
+          transition: all 0.3s ease; 
+          backdrop-filter: blur(8px);
+          ${glowStyle}
+        ">
+          <div class="node-header" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
+            <i class="${node.isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch'}" style="color: ${isActive ? 'var(--success)' : 'var(--text-muted)'};"></i>
+            <span style="color: var(--text-main);">${node.label}</span>
+          </div>
+          ${nodeDetails}
+        </div>
+        ${childrenHtml}
+      </div>
+    `;
+  }
+
+  canvas.innerHTML = buildNodeHtml(tree);
+}
+
+function applyRecParameters() {
+  if (!latestRecommendationData) return;
+
+  const res = latestRecommendationData;
+  const activeLeafId = res.activeNodeIds[res.activeNodeIds.length - 1];
+  const req = res.originalRequest;
+
+  // Let's do a smart fill!
+  if (activeLeafId === 'L1' || activeLeafId === 'L2') {
+    // Term Life combos
+    switchTab('life');
+    
+    // Set coverage dropdown
+    const select = document.getElementById('life-sum-assured');
+    const val = activeLeafId === 'L1' ? 10000000 : 5000000;
+    
+    // Convert target to current currency mode if needed
+    let selectVal = val;
+    if (state.currencyType === 'usd') {
+      selectVal = Math.round(val / 80.0);
+    }
+    
+    // Select closest matching option
+    select.value = selectVal;
+    if (!select.value) {
+      // Find closest
+      let minDiff = Infinity;
+      let bestOpt = select.options[0].value;
+      Array.from(select.options).forEach(opt => {
+        let diff = Math.abs(parseFloat(opt.value) - selectVal);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestOpt = opt.value;
+        }
+      });
+      select.value = bestOpt;
+    }
+    
+    // Set Age
+    document.getElementById('life-age').value = req.age;
+    
+    // Auto calculate
+    calculateLifeInsurance();
+    alert(`Term Life parameters applied: Age ${req.age} & Suggested Coverage!`);
+  } 
+  else if (activeLeafId === 'L3' || activeLeafId === 'L8') {
+    // Auto Combos
+    switchTab('auto');
+    
+    // Pre-fill Auto IDV
+    const autoVal = activeLeafId === 'L3' ? 800000 : 500000;
+    let finalAutoVal = autoVal;
+    if (state.currencyType === 'usd') {
+      finalAutoVal = Math.round(autoVal / 80.0);
+    }
+    
+    const slider = document.getElementById('auto-idv');
+    slider.value = finalAutoVal;
+    updateAutoIdvLabel(finalAutoVal);
+    
+    // Set CC and vehicle age
+    document.getElementById('auto-engine-cc').value = "1200";
+    document.getElementById('auto-vehicle-age').value = "1";
+    document.getElementById('val-auto-age').innerText = '1 Year';
+    
+    // Auto calculate
+    calculateAutoInsurance();
+    alert(`Auto Premium parameters applied: Suggested IDV & standard cc rates!`);
+  } 
+  else {
+    // Health Care plans: L4, L5, L7, L9, L6
+    switchTab('health');
+    
+    const select = document.getElementById('health-coverage');
+    let hCover = 500000;
+    if (activeLeafId === 'L5') hCover = 1500000;
+    else if (activeLeafId === 'L7') hCover = 500000; // Floater Standard
+    else if (activeLeafId === 'L6') hCover = 1000000; // Premium float
+
+    let finalHVal = hCover;
+    if (state.currencyType === 'usd') {
+      finalHVal = Math.round(hCover / 80.0);
+    }
+
+    select.value = finalHVal;
+    if (!select.value) {
+      let minDiff = Infinity;
+      let bestOpt = select.options[0].value;
+      Array.from(select.options).forEach(opt => {
+        let diff = Math.abs(parseFloat(opt.value) - finalHVal);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestOpt = opt.value;
+        }
+      });
+      select.value = bestOpt;
+    }
+
+    document.getElementById('health-age').value = req.age;
+    
+    // If Floater, set spouse/children
+    if (activeLeafId === 'L7') {
+      const spouseCb = document.getElementById('health-spouse');
+      spouseCb.checked = true;
+      toggleSpouseAgeInput(true);
+      document.getElementById('health-spouse-age').value = req.age;
+      document.getElementById('health-kids').value = "2";
+    }
+
+    // Set preexisting checks if health risk is yes
+    if (req.hasHealthRisk) {
+      const checkBoxes = document.querySelectorAll('.health-condition');
+      checkBoxes.forEach((cb, idx) => {
+        if (idx === 0) cb.checked = true; // Diabetes
+      });
+    }
+
+    calculateHealthInsurance();
+    alert(`Health parameters applied: Age ${req.age} & Suggested Floater/Individual limits!`);
+  }
 }
 

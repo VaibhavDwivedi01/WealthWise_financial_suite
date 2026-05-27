@@ -2263,3 +2263,103 @@ input:checked + .slider-round:before {
   from { transform: scale(0.9) translateY(10px); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
 }
+
+/* ==========================================================================
+   AI POLICY RECOMMENDER & DYNAMIC DECISION TREE VISUALIZER STYLING
+   ========================================================================== */
+
+.tree-vis-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.tree-vis-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tree-vis-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.tree-map-canvas {
+  display: flex;
+  justify-content: center;
+  min-width: 900px;
+  padding: 10px;
+}
+
+.tree-node-card {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.tree-node-card:hover {
+  transform: translateY(-2px);
+}
+
+.tree-node-card.node-split {
+  border-left: 3px solid var(--primary) !important;
+}
+
+.tree-node-card.node-leaf {
+  border-left: 3px solid var(--success) !important;
+  background: rgba(46, 213, 115, 0.03);
+}
+
+/* Traversed active nodes glow states */
+.tree-node-block.node-active > .tree-node-card {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 20px rgba(46, 213, 115, 0.2) !important;
+  animation: borderGlowPulse 2.5s infinite alternate;
+}
+
+.tree-node-block.node-active > .tree-node-card.node-split {
+  border-left-color: var(--success) !important;
+}
+
+@keyframes borderGlowPulse {
+  0% { box-shadow: 0 0 10px rgba(46, 213, 115, 0.15); }
+  100% { box-shadow: 0 0 25px rgba(46, 213, 115, 0.35); }
+}
+
+/* Branch connects YES/NO styles */
+.branch-label {
+  transition: all 0.3s ease;
+}
+
+.branch-label.branch-active {
+  box-shadow: 0 0 10px rgba(46, 213, 115, 0.15) !important;
+  animation: textGlowPulse 2s infinite alternate;
+}
+
+@keyframes textGlowPulse {
+  0% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+/* Traversal Path Timeline */
+.timeline-step {
+  transition: all 0.3s ease;
+}
+
+.timeline-step:hover {
+  background: rgba(255, 255, 255, 0.01);
+  transform: translateX(3px);
+}
+
+.timeline-dot {
+  transition: all 0.3s ease;
+}
+
+.timeline-step:hover .timeline-dot {
+  transform: scale(1.3) translate(-1px, 0);
+}
+
+/* Success Card specialized glow */
+.success-card {
+  border: 1px solid rgba(46, 213, 115, 0.2) !important;
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.03) 0%, rgba(0,0,0,0.02) 100%);
+}
+
