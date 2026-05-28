@@ -297,6 +297,13 @@ function toggleCurrency() {
 function switchTab(tabName) {
   state.activeTab = tabName;
 
+  // Auto-collapse sidebar drawer on mobile/tablet viewports after selection
+  if (window.innerWidth <= 992) {
+    document.body.classList.remove('sidebar-open');
+    const overlay = document.getElementById('sidebar-overlay-bg');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
   // Toggle active class on nav buttons
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
@@ -2320,6 +2327,18 @@ function applyRecParameters() {
 
     calculateHealthInsurance();
     alert(`Health parameters applied: Age ${req.age} & Suggested Floater/Individual limits!`);
+  }
+}
+
+function toggleMobileMenu() {
+  document.body.classList.toggle('sidebar-open');
+  const overlay = document.getElementById('sidebar-overlay-bg');
+  if (overlay) {
+    if (document.body.classList.contains('sidebar-open')) {
+      overlay.classList.remove('hidden');
+    } else {
+      overlay.classList.add('hidden');
+    }
   }
 }
 

@@ -2363,3 +2363,151 @@ input:checked + .slider-round:before {
   background: linear-gradient(135deg, rgba(46, 213, 115, 0.03) 0%, rgba(0,0,0,0.02) 100%);
 }
 
+/* ==========================================================================
+   RESPONSIVE GUI UPGRADES & SCREEN VIEWPORT FITTING (MOBILE & TABLETS)
+   ========================================================================== */
+
+/* Show Hamburger menu trigger only on screens under 992px */
+.mobile-menu-toggle {
+  display: none;
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--shadow-main);
+  transition: all var(--transition-fast);
+}
+
+.mobile-menu-toggle:hover {
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+/* Sidebar Close Button */
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  transition: color var(--transition-fast);
+}
+
+.sidebar-close-btn:hover {
+  color: var(--accent);
+}
+
+/* Dark blurred overlay backdrop */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media(max-width: 992px) {
+  /* Display hamburger trigger & sidebar close control */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
+  .sidebar-close-btn {
+    display: block;
+    margin-left: auto;
+  }
+
+  /* Redefine Sidebar layout to sliding drawer */
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* When sidebar is opened */
+  body.sidebar-open .app-sidebar {
+    transform: translateX(0);
+  }
+
+  /* Workspace main panel fills full width */
+  .app-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 20px !important; /* Thinner compact padding on mobile */
+  }
+
+  .main-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .header-left {
+    flex-grow: 1;
+  }
+
+  .header-left h2 {
+    font-size: 20px;
+  }
+
+  .header-left p {
+    font-size: 11px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .live-date {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  .header-toggle {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  /* Grid layout adjusts to 1 column */
+  .grid-layout {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  .glass-card {
+    padding: 18px; /* Tighter padding inside cards */
+  }
+}
+
+

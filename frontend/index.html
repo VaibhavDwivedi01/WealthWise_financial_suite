@@ -35,6 +35,9 @@
           <h1>WEALTHWISE</h1>
           <span>Financial Suite</span>
         </div>
+        <button class="sidebar-close-btn" onclick="toggleMobileMenu()" aria-label="Close Menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       
       <!-- User Account Profile Panel -->
@@ -105,6 +108,9 @@
     <!-- Main Content Area -->
     <main class="app-main">
       <header class="main-header">
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
         <div class="header-left">
           <h2 id="view-title">Loan EMI Calculator</h2>
           <p id="view-description">Calculate monthly installments, analyze prepayment interest savings, and export schedules.</p>
@@ -1344,6 +1350,9 @@
     <div class="spinner"></div>
     <p id="loader-text">Retrieving Live Calculations...</p>
   </div>
+
+  <!-- Sidebar Backdrop Overlay on Mobile -->
+  <div class="sidebar-overlay hidden" id="sidebar-overlay-bg" onclick="toggleMobileMenu()"></div>
 
   <!-- Chart.js Core CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
