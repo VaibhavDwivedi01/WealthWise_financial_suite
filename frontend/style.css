@@ -95,6 +95,11 @@
 }
 
 /* Base Document Reset */
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -128,6 +133,7 @@ body {
   min-height: 100vh;
   display: flex;
   overflow-x: hidden;
+  max-width: 100%;
   transition: background var(--transition-normal);
 }
 
@@ -136,6 +142,7 @@ body {
   display: flex;
   width: 100%;
   min-height: 100vh;
+  overflow-x: hidden; /* Prevents horizontal scroll leaks at container level */
 }
 
 /* ==========================================================================
@@ -438,6 +445,7 @@ input:checked + .slider-round:before {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* Prevents children overflow from stretching main panel */
 }
 
 .main-header {
@@ -524,6 +532,10 @@ input:checked + .slider-round:before {
   grid-template-columns: 1.1fr 0.9fr;
   gap: 30px;
   margin-bottom: 30px;
+}
+
+.grid-layout > div {
+  min-width: 0; /* Prevents container overflows from expanding Grid columns */
 }
 
 @media(max-width: 1024px) {
@@ -2285,8 +2297,18 @@ input:checked + .slider-round:before {
 .tree-map-canvas {
   display: flex;
   justify-content: center;
-  min-width: 900px;
   padding: 10px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.tree-map-canvas.view-full {
+  min-width: 1024px; /* Force minimum width to prevent node overlapping in full tree view */
+}
+
+.tree-map-canvas.view-flowchart {
+  min-width: auto;
+  max-width: 100%;
 }
 
 .tree-node-block {
@@ -2566,6 +2588,7 @@ input:checked + .slider-round:before {
     margin-left: 0 !important;
     width: 100% !important;
     padding: 20px !important; /* Thinner compact padding on mobile */
+    min-width: 0 !important; /* Prevents flex children from overflowing on mobile */
   }
 
   .main-header {

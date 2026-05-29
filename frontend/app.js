@@ -2129,6 +2129,7 @@ function renderDecisionVisuals() {
 function renderFlowchartVisual(tree, activeNodeIds) {
   const canvas = document.getElementById('tree-map-canvas');
   if (!canvas) return;
+  canvas.className = 'tree-map-canvas view-flowchart';
 
   const activeNodes = [];
   
@@ -2191,6 +2192,7 @@ function renderFlowchartVisual(tree, activeNodeIds) {
 function renderFullTreeVisual(tree, activeNodeIds) {
   const canvas = document.getElementById('tree-map-canvas');
   if (!canvas) return;
+  canvas.className = 'tree-map-canvas view-full';
 
   function buildNodeHtml(node) {
     const isActive = activeNodeIds.includes(node.id);
