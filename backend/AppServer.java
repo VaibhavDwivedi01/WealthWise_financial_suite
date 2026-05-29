@@ -22,8 +22,20 @@ import java.util.Map;
 
 public class AppServer {
 
-    private static final int PORT = 3000;
+    private static final int PORT = getPort();
     private static final Gson gson = new Gson();
+
+    private static int getPort() {
+        String envPort = System.getenv("PORT");
+        if (envPort != null && !envPort.isEmpty()) {
+            try {
+                return Integer.parseInt(envPort);
+            } catch (NumberFormatException e) {
+                // Fallback to default
+            }
+        }
+        return 3000;
+    }
 
     // Google Gemini API Key
     private static final String GEMINI_API_KEY = "AIzaSyBRHX50u5WyI61vhmMOBui9g86aLtY90Es"; 
