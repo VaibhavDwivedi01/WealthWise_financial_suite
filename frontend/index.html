@@ -1108,61 +1108,67 @@
               <div id="rec-output-box" class="hidden">
                 
                 <!-- Matching Policy Card -->
-                <div class="glass-card premium-summary-card success-card" style="margin-bottom: 25px;">
+                <div class="glass-card premium-summary-card success-card rec-success-card">
                   <div class="card-header border-bottom">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <i class="fa-solid fa-shield-halved text-success" style="font-size: 20px;"></i>
+                    <div class="rec-card-header-left">
+                      <i class="fa-solid fa-shield-halved text-success"></i>
                       <h3>Predicted Policy Match</h3>
                     </div>
-                    <span class="badge accent animate-pulse" style="font-size: 10px; font-weight: 800; padding: 4px 8px;">100% Tree Matched</span>
+                    <span class="badge accent animate-pulse rec-accuracy-badge">100% Tree Matched</span>
                   </div>
                   
-                  <div class="premium-price-box" style="margin-top: 15px;">
-                    <div class="price-wrapper" style="text-align: left;">
-                      <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Recommended Solution</span><br>
-                      <span class="price" id="res-rec-product" style="font-size: 20px; font-weight: 800; color: var(--text-main); line-height: 1.3;">Term Life & Health Floater Plan</span>
+                  <div class="premium-price-box rec-price-box">
+                    <div class="price-wrapper text-left">
+                      <span class="rec-solution-title">Recommended Solution</span><br>
+                      <span class="price rec-product-title" id="res-rec-product">Term Life & Health Floater Plan</span>
                     </div>
                   </div>
 
-                  <div class="bd-row" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                  <div class="bd-row rec-row-top">
                     <span>Suggested Combined Coverage</span>
-                    <strong id="res-rec-coverage" style="color: var(--success); font-size: 14px;">₹ 1,00,00,000</strong>
+                    <strong id="res-rec-coverage" class="rec-coverage-value">₹ 1,00,00,000</strong>
                   </div>
 
-                  <div class="bd-row" style="padding-top: 5px;">
+                  <div class="bd-row rec-row-padding">
                     <span>Underlying Algorithm</span>
-                    <span style="color: var(--text-muted); font-size: 11px;">Iterative Binary Classification</span>
+                    <span class="rec-algo-badge">Iterative Binary Classification</span>
                   </div>
 
-                  <div class="bd-row" style="padding-top: 5px; flex-direction: column; align-items: flex-start; gap: 6px;">
-                    <span style="color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase;">Diagnostic Rationale:</span>
-                    <p id="res-rec-rationale" style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; text-align: justify;"></p>
+                  <div class="bd-row rec-row-column">
+                    <span class="rec-rationale-title">Diagnostic Rationale:</span>
+                    <p id="res-rec-rationale" class="rec-rationale-text"></p>
                   </div>
                   
-                  <div class="card-footer border-top" style="margin-top: 15px; padding-top: 12px; display: flex; gap: 10px; justify-content: flex-end;">
+                  <div class="card-footer border-top rec-card-footer">
                     <button class="btn btn-secondary btn-sm" onclick="applyRecParameters()"><i class="fa-solid fa-share-from-square"></i> Pre-Fill specialized Suite</button>
                   </div>
                 </div>
 
                 <!-- Timeline / Split Decisions Path -->
-                <div class="glass-card border-card" style="margin-bottom: 25px;">
-                  <div class="card-header border-bottom" style="padding-bottom: 8px;">
+                <div class="glass-card border-card rec-timeline-card">
+                  <div class="card-header border-bottom">
                     <h3><i class="fa-solid fa-network-wired text-primary"></i> Traversal Path Diagnostics</h3>
                   </div>
-                  <div class="path-timeline" id="rec-path-timeline" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                  <div class="path-timeline rec-timeline-feed" id="rec-path-timeline">
                     <!-- Traversal path filled dynamically -->
                   </div>
                 </div>
 
                 <!-- Tree Visualization Mapping -->
-                <div class="glass-card border-card">
-                  <div class="card-header border-bottom" style="padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <h3><i class="fa-solid fa-tree text-success"></i> Full Classification Tree Structure</h3>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Traversal Legend: <span style="display:inline-block; width:8px; height:8px; background:var(--success); border-radius:50%; box-shadow:0 0 8px var(--success);"></span> Traversed</span>
+                <div class="glass-card border-card rec-tree-card">
+                  <div class="card-header border-bottom rec-tree-header">
+                    <div class="rec-tree-header-left">
+                      <h3><i class="fa-solid fa-tree text-success"></i> Model Classification Map</h3>
+                      <span class="rec-legend">Legend: <span class="legend-dot active"></span> Traversed</span>
+                    </div>
+                    <div class="toggle-group" id="tree-view-toggle">
+                      <button class="toggle-btn active" id="tree-btn-flowchart" onclick="switchTreeView('flowchart')">Decision Path</button>
+                      <button class="toggle-btn" id="tree-btn-full" onclick="switchTreeView('full')">Full Tree</button>
+                    </div>
                   </div>
-                  <div class="tree-vis-wrapper" style="margin-top: 20px; overflow-x: auto; padding: 10px 0;">
+                  <div class="tree-vis-wrapper rec-tree-wrapper">
                     <div id="tree-map-canvas" class="tree-map-canvas">
-                      <!-- Render full responsive tree map dynamically -->
+                      <!-- Render active path flowchart or full tree dynamically -->
                     </div>
                   </div>
                 </div>

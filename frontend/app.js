@@ -18,7 +18,10 @@ const state = {
   // User Session State
   user: null,
   modalAuthTab: 'signin',
-  activeHistory: null
+  activeHistory: null,
+  
+  // AI Recommender View State
+  treeViewMode: 'flowchart' // 'flowchart' (Decision Path) or 'full' (Full Tree)
 };
 
 // Map of view information for dynamic headers
@@ -2072,45 +2075,120 @@ async function predictBestPolicy() {
     res.decisionPath.forEach((step, idx) => {
       const stepDiv = document.createElement('div');
       stepDiv.className = 'timeline-step';
-      stepDiv.style = `
-        display: flex; 
-        align-items: flex-start; 
-        gap: 10px; 
-        padding-left: 15px; 
-        position: relative; 
-        border-left: 2px solid ${idx === res.decisionPath.length - 1 ? 'var(--success)' : 'var(--border-color)'}; 
-        padding-bottom: 12px;
-      `;
       
       const isLeaf = step.startsWith('Leaf Reached:');
-      const dotColor = isLeaf ? 'var(--success)' : 'var(--primary)';
       const icon = isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch';
 
       stepDiv.innerHTML = `
-        <span class="timeline-dot" style="
-          position: absolute; 
-          left: -6px; 
-          top: 3px; 
-          width: 10px; 
-          height: 10px; 
-          background: ${dotColor}; 
-          border-radius: 50%; 
-          box-shadow: 0 0 8px ${dotColor};
-        "></span>
-        <div style="font-size: 12px; color: var(--text-main); line-height: 1.4;">
-          <strong style="color: ${dotColor}; text-transform: uppercase; font-size: 10px; display: block; margin-bottom: 2px;"><i class="${icon}"></i> Step ${idx + 1}</strong>
+        <span class="timeline-dot"></span>
+        <div class="timeline-step-content">
+          <strong class="timeline-step-title"><i class="${icon}"></i> Step ${idx + 1}</strong>
           ${step}
         </div>
       `;
       timeline.appendChild(stepDiv);
     });
 
-    // Render Full Graphical Tree Map
-    renderDecisionTreeVisual(res.treeStructure, res.activeNodeIds);
+    // Render Traversal Visual Map
+    renderDecisionVisuals();
   }
 }
 
-function renderDecisionTreeVisual(tree, activeNodeIds) {
+function switchTreeView(mode) {
+  state.treeViewMode = mode;
+  
+  const flowchartBtn = document.getElementById('tree-btn-flowchart');
+  const fullBtn = document.getElementById('tree-btn-full');
+  
+  if (flowchartBtn && fullBtn) {
+    if (mode === 'flowchart') {
+      flowchartBtn.classList.add('active');
+      fullBtn.classList.remove('active');
+    } else {
+      flowchartBtn.classList.remove('active');
+      fullBtn.classList.add('active');
+    }
+  }
+
+  if (latestRecommendationData) {
+    renderDecisionVisuals();
+  }
+}
+
+function renderDecisionVisuals() {
+  if (!latestRecommendationData) return;
+  
+  const res = latestRecommendationData;
+  if (state.treeViewMode === 'flowchart') {
+    renderFlowchartVisual(res.treeStructure, res.activeNodeIds);
+  } else {
+    renderFullTreeVisual(res.treeStructure, res.activeNodeIds);
+  }
+}
+
+function renderFlowchartVisual(tree, activeNodeIds) {
+  const canvas = document.getElementById('tree-map-canvas');
+  if (!canvas) return;
+
+  const activeNodes = [];
+  
+  function collectActiveNodes(node) {
+    if (!node) return;
+    if (activeNodeIds.includes(node.id)) {
+      activeNodes.push(node);
+      if (!node.isLeaf) {
+        collectActiveNodes(node.left);
+        collectActiveNodes(node.right);
+      }
+    }
+  }
+  
+  collectActiveNodes(tree);
+
+  let flowchartHtml = '<div class="flowchart-canvas">';
+  
+  activeNodes.forEach((node, idx) => {
+    let nodeDetails = '';
+    if (node.isLeaf) {
+      let displayCoverage = node.resultCoverage;
+      if (state.currencyType === 'usd') {
+        displayCoverage = Math.round(displayCoverage / 80.0);
+      }
+      nodeDetails = `
+        <div class="leaf-details">
+          <strong>${node.resultProduct}</strong>
+          <span>Suggested Cover: ${formatCurrency(displayCoverage, true, 0)}</span>
+        </div>
+      `;
+    } else {
+      nodeDetails = `
+        <div class="split-condition">
+          ${node.conditionText}
+        </div>
+      `;
+    }
+
+    const icon = node.isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch';
+
+    flowchartHtml += `
+      <div class="flow-node-wrapper">
+        <div class="flow-node-card">
+          <div class="node-header">
+            <i class="${icon}"></i>
+            <span>${node.label}</span>
+          </div>
+          ${nodeDetails}
+        </div>
+        ${idx < activeNodes.length - 1 ? '<div class="flow-connector-line"></div>' : ''}
+      </div>
+    `;
+  });
+
+  flowchartHtml += '</div>';
+  canvas.innerHTML = flowchartHtml;
+}
+
+function renderFullTreeVisual(tree, activeNodeIds) {
   const canvas = document.getElementById('tree-map-canvas');
   if (!canvas) return;
 
@@ -2127,31 +2205,11 @@ function renderDecisionTreeVisual(tree, activeNodeIds) {
       childrenHtml = `
         <div class="node-children" style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; position: relative;">
           <div class="child-branch branch-yes" style="display: flex; flex-direction: column; align-items: center; position: relative; flex: 1;">
-            <span class="branch-label ${leftActive ? 'branch-active' : ''}" style="
-              font-size: 9px; 
-              font-weight: 800; 
-              color: ${leftActive ? 'var(--success)' : 'var(--text-muted)'}; 
-              padding: 2px 6px; 
-              background: ${leftActive ? 'rgba(46, 213, 115, 0.1)' : 'rgba(255,255,255,0.02)'}; 
-              border: 1px solid ${leftActive ? 'var(--success)' : 'var(--border-color)'};
-              border-radius: var(--radius-xs); 
-              margin-bottom: 8px;
-              text-shadow: ${leftActive ? '0 0 8px rgba(46, 213, 115, 0.4)' : 'none'};
-            ">YES</span>
+            <span class="branch-label ${leftActive ? 'branch-active' : ''}">YES</span>
             ${buildNodeHtml(node.left)}
           </div>
           <div class="child-branch branch-no" style="display: flex; flex-direction: column; align-items: center; position: relative; flex: 1;">
-            <span class="branch-label ${rightActive ? 'branch-active' : ''}" style="
-              font-size: 9px; 
-              font-weight: 800; 
-              color: ${rightActive ? 'var(--danger)' : 'var(--text-muted)'}; 
-              padding: 2px 6px; 
-              background: ${rightActive ? 'rgba(255, 71, 87, 0.1)' : 'rgba(255,255,255,0.02)'}; 
-              border: 1px solid ${rightActive ? 'var(--danger)' : 'var(--border-color)'};
-              border-radius: var(--radius-xs); 
-              margin-bottom: 8px;
-              text-shadow: ${rightActive ? '0 0 8px rgba(255, 71, 87, 0.4)' : 'none'};
-            ">NO</span>
+            <span class="branch-label ${rightActive ? 'branch-active' : ''}">NO</span>
             ${buildNodeHtml(node.right)}
           </div>
         </div>
@@ -2165,38 +2223,25 @@ function renderDecisionTreeVisual(tree, activeNodeIds) {
         displayCoverage = Math.round(displayCoverage / 80.0);
       }
       nodeDetails = `
-        <div class="leaf-details" style="margin-top: 6px; font-size: 11px; line-height: 1.3;">
-          <div style="font-weight: 800; color: var(--success); margin-bottom: 4px;">${node.resultProduct}</div>
-          <div style="color: var(--text-muted); font-size: 10px;">Cover: ${formatCurrency(displayCoverage, true, 0)}</div>
+        <div class="leaf-details">
+          <strong>${node.resultProduct}</strong>
+          <span>Cover: ${formatCurrency(displayCoverage, true, 0)}</span>
         </div>
       `;
     } else {
       nodeDetails = `
-        <div class="split-condition" style="margin-top: 5px; font-size: 10px; color: var(--text-muted); line-height: 1.4;">
+        <div class="split-condition">
           ${node.conditionText}
         </div>
       `;
     }
 
-    const glowStyle = isActive ? `box-shadow: 0 0 15px var(--success-glow); border-color: var(--success);` : '';
-
     return `
-      <div class="tree-node-block ${activeClass}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-        <div class="tree-node-card ${nodeClass}" style="
-          background: ${isActive ? 'rgba(46, 213, 115, 0.08)' : 'rgba(255,255,255,0.01)'}; 
-          border: 1px solid ${isActive ? 'var(--success)' : 'var(--border-color)'}; 
-          border-radius: var(--radius-sm); 
-          padding: 10px 14px; 
-          text-align: center; 
-          min-width: 160px; 
-          max-width: 220px; 
-          transition: all 0.3s ease; 
-          backdrop-filter: blur(8px);
-          ${glowStyle}
-        ">
-          <div class="node-header" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
-            <i class="${node.isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch'}" style="color: ${isActive ? 'var(--success)' : 'var(--text-muted)'};"></i>
-            <span style="color: var(--text-main);">${node.label}</span>
+      <div class="tree-node-block ${activeClass}">
+        <div class="tree-node-card ${nodeClass}">
+          <div class="node-header">
+            <i class="${node.isLeaf ? 'fa-solid fa-gift' : 'fa-solid fa-code-branch'}"></i>
+            <span>${node.label}</span>
           </div>
           ${nodeDetails}
         </div>
