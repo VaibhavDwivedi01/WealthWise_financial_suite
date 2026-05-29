@@ -37,8 +37,8 @@ public class AppServer {
         return 3000;
     }
 
-    // Google Gemini API Key
-    private static final String GEMINI_API_KEY = "AIzaSyBRHX50u5WyI61vhmMOBui9g86aLtY90Es"; 
+    // Google Gemini API Key (Loaded securely from Environment Variables to prevent GitHub secret exposure alerts)
+    private static final String GEMINI_API_KEY = System.getenv("GEMINI_API_KEY"); 
 
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
